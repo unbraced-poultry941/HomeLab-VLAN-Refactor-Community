@@ -236,9 +236,9 @@ la mention d'attribution originale.
 ---
 
 *Dépôt maintenu par [@valorisa](https://github.com/valorisa)*  
-*Inspiré du travail de la chaîne YouTube [iMot3k](https://www.youtube.com/@imot3k)*
+*Inspiré du travail de la chaîne YouTube [iMot3k](https://www.youtube.com/@imot3k_)*
 ```
 
 ---
 
-Ce `README.md` est maintenant complet avec une table des matières navigable, le diagramme ASCII de l'architecture, le plan IP intégré, la structure du dépôt annotée et l'ordre de migration clair.
+Ce `README.md` est maintenant complet avec une table des matières navigable, le diagramme ASCII de l'architecture, le plan IP intégré, la structure du dépôt annotée et l'ordre de migration clair.     
