@@ -236,7 +236,7 @@ la mention d'attribution originale.
 ---
 
 *Dépôt maintenu par [@valorisa](https://github.com/valorisa)*  
-*Inspiré du travail de la chaîne YouTube [iMot3k](https://www.youtube.com/@iMot3k)*
+*Inspiré du travail de la chaîne YouTube [iMot3k](https://www.youtube.com/@imot3k)*
 ```
 
 ---
